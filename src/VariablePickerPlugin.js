@@ -244,7 +244,7 @@ export default class VariablePickerPlugin extends PureComponent {
     // Account for status bar (~30px) at the bottom
     const statusBarHeight = 30;
     const bottomLimit = window.innerHeight - statusBarHeight;
-    const panelHeight = 400;
+    const panelHeight = 600;
     let top = fieldRect.top;
     if (top + panelHeight > bottomLimit) {
       top = bottomLimit - panelHeight;

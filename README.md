@@ -4,6 +4,8 @@ A drag-and-drop variable picker plugin for [Camunda Modeler](https://github.com/
 
 Browse process variables in a floating panel and drag them into expression fields. JSON variables expand into a navigable tree with automatic SPIN expression generation.
 
+![Variable Picker Screenshot](docs/screenshot.png)
+
 ## Features
 
 - **Variable scanning** — extracts variables from I/O mappings, form fields, result variables, and script tasks

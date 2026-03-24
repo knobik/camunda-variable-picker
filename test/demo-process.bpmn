@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.45.0-dev">
+  <bpmn:process id="OrderProcess" name="Order Processing" isExecutable="true">
+    <bpmn:startEvent id="StartEvent_1" name="Order Received">
+      <bpmn:extensionElements>
+        <camunda:formData>
+          <camunda:formField id="customerName" label="Customer Name" type="string" />
+          <camunda:formField id="customerEmail" label="Email" type="string" />
+          <camunda:formField id="orderAmount" label="Amount" type="long" />
+          <camunda:formField id="isPriority" label="Priority Order" type="boolean" />
+        </camunda:formData>
+      </bpmn:extensionElements>
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="FetchCustomerData" name="Fetch Customer Data" camunda:delegateExpression="${fetchCustomerDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="customerId">${customerName}</camunda:inputParameter>
+          <camunda:outputParameter name="customerProfile">{"name":"Jane Smith","email":"jane@example.com","address":{"street":"123 Main St","city":"Amsterdam","zip":"1012AB","country":"NL"},"preferences":{"newsletter":true,"language":"en"}}</camunda:outputParameter>
+          <camunda:outputParameter name="loyaltyPoints">2450</camunda:outputParameter>
+          <camunda:outputParameter name="accountStatus">active</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:serviceTask id="ValidateOrder" name="Validate Order" camunda:delegateExpression="${validateOrderDelegate}">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="orderData">{"items":[{"productId":"SKU-001","name":"Wireless Headphones","quantity":2,"price":79.99},{"productId":"SKU-042","name":"USB-C Cable","quantity":5,"price":12.50}],"shipping":{"method":"express","cost":9.95},"discount":{"code":"SAVE10","percentage":10}}</camunda:inputParameter>
+          <camunda:inputParameter name="maxOrderValue">5000</camunda:inputParameter>
+          <camunda:inputParameter name="validateInventory">true</camunda:inputParameter>
+          <camunda:outputParameter name="isValid">true</camunda:outputParameter>
+          <camunda:outputParameter name="validationErrors">[]</camunda:outputParameter>
+          <camunda:outputParameter name="totalAmount">222.43</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_3</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1" name="Order Valid?">
+      <bpmn:incoming>Flow_3</bpmn:incoming>
+      <bpmn:outgoing>Flow_4</bpmn:outgoing>
+      <bpmn:outgoing>Flow_5</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:serviceTask id="ProcessPayment" name="Process Payment" camunda:delegateExpression="${paymentDelegate}" camunda:resultVariable="paymentConfirmation">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="amount">${totalAmount}</camunda:inputParameter>
+          <camunda:inputParameter name="currency">EUR</camunda:inputParameter>
+          <camunda:inputParameter name="paymentMethod">credit_card</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_4</bpmn:incoming>
+      <bpmn:outgoing>Flow_6</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:scriptTask id="CalculateShipping" name="Calculate Shipping" scriptFormat="groovy">
+      <bpmn:incoming>Flow_6</bpmn:incoming>
+      <bpmn:outgoing>Flow_7</bpmn:outgoing>
+      <bpmn:script>def weight = orderAmount * 0.5
+execution.setVariable("shippingWeight", weight)
+execution.setVariable("estimatedDelivery", "2026-04-01")
+execution.setVariable("trackingNumber", "TRK-" + System.currentTimeMillis())</bpmn:script>
+    </bpmn:scriptTask>
+    <bpmn:userTask id="ReviewOrder" name="Review Order" camunda:assignee="manager">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:inputParameter name="reviewNotes">${customerName} -</camunda:inputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_8</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:endEvent id="EndEvent_1" name="Order Completed">
+      <bpmn:incoming>Flow_8</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:endEvent id="EndEvent_2" name="Order Rejected">
+      <bpmn:incoming>Flow_5</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="FetchCustomerData" />
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="FetchCustomerData" targetRef="ValidateOrder" />
+    <bpmn:sequenceFlow id="Flow_3" sourceRef="ValidateOrder" targetRef="Gateway_1" />
+    <bpmn:sequenceFlow id="Flow_4" name="Yes" sourceRef="Gateway_1" targetRef="ProcessPayment">
+      <bpmn:conditionExpression>${isValid == true}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_5" name="No" sourceRef="Gateway_1" targetRef="EndEvent_2">
+      <bpmn:conditionExpression>${isValid == false}</bpmn:conditionExpression>
+    </bpmn:sequenceFlow>
+    <bpmn:sequenceFlow id="Flow_6" sourceRef="ProcessPayment" targetRef="CalculateShipping" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="CalculateShipping" targetRef="ReviewOrder" />
+    <bpmn:sequenceFlow id="Flow_8" sourceRef="ReviewOrder" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="OrderProcess">
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="179" y="109" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="155" y="152" width="85" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="FetchCustomerData_di" bpmnElement="FetchCustomerData">
+        <dc:Bounds x="270" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ValidateOrder_di" bpmnElement="ValidateOrder">
+        <dc:Bounds x="430" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1_di" bpmnElement="Gateway_1" isMarkerVisible="true">
+        <dc:Bounds x="585" y="102" width="50" height="50" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="576" y="78" width="68" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ProcessPayment_di" bpmnElement="ProcessPayment">
+        <dc:Bounds x="690" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="CalculateShipping_di" bpmnElement="CalculateShipping">
+        <dc:Bounds x="850" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReviewOrder_di" bpmnElement="ReviewOrder">
+        <dc:Bounds x="1010" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="1172" y="109" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1160" y="152" width="60" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_2_di" bpmnElement="EndEvent_2">
+        <dc:Bounds x="592" y="232" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="569" y="275" width="83" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="215" y="127" />
+        <di:waypoint x="270" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="370" y="127" />
+        <di:waypoint x="430" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_3_di" bpmnElement="Flow_3">
+        <di:waypoint x="530" y="127" />
+        <di:waypoint x="585" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_4_di" bpmnElement="Flow_4">
+        <di:waypoint x="635" y="127" />
+        <di:waypoint x="690" y="127" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="654" y="109" width="18" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_5_di" bpmnElement="Flow_5">
+        <di:waypoint x="610" y="152" />
+        <di:waypoint x="610" y="232" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="618" y="183" width="16" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_6_di" bpmnElement="Flow_6">
+        <di:waypoint x="790" y="127" />
+        <di:waypoint x="850" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_7_di" bpmnElement="Flow_7">
+        <di:waypoint x="950" y="127" />
+        <di:waypoint x="1010" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1110" y="127" />
+        <di:waypoint x="1172" y="127" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
