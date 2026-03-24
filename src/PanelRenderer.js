@@ -7,6 +7,8 @@ const CATEGORY_LABELS = {
   'form-field': 'Form Fields',
   'result-variable': 'Result Variables',
   'script-variable': 'Script Variables',
+  'multi-instance': 'Multi-Instance',
+  'listener-variable': 'Listener Variables',
   'api-variable': 'API Variables'
 };
 
@@ -16,7 +18,9 @@ const CATEGORY_ORDER = [
   'input-mapping',
   'form-field',
   'result-variable',
-  'script-variable'
+  'script-variable',
+  'multi-instance',
+  'listener-variable'
 ];
 
 const TYPE_ICONS = {
@@ -152,6 +156,7 @@ function SimpleVariable({ variable, onDragStart, onDragEnd }) {
 
   return h('div', {
     class: 'variable-picker-item', draggable: true,
+    'data-variable': JSON.stringify(variable),
     onDragStart: (e) => onDragStart(e, variable), onDragEnd,
     title: variable.name + ' (' + variable.type + ')' +
       (variable.value !== undefined ? '\nValue: ' + String(variable.value) : '') +
@@ -283,6 +288,9 @@ function TreeNode({ varName, label, node, path, collapsedPaths, onTogglePath, on
   return h('div', null,
     h('div', {
       class: 'variable-picker-tree-node', draggable: true,
+      'data-var-name': varName,
+      'data-path': JSON.stringify(path),
+      'data-leaf': String(isLeaf),
       onDragStart: (e) => onDragStart(e, dragData), onDragEnd,
       style: { paddingLeft: paddingLeft + 'px' },
       title: 'SPIN: ' + spinExpr

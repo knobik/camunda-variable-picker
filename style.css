@@ -240,6 +240,12 @@
   margin-top: 2px;
 }
 
+/* Keyboard highlight */
+.variable-picker-item-highlighted {
+  background: #f0f5ff !important;
+  border-left-color: #4f7df9 !important;
+}
+
 /* API enriched badge */
 .variable-picker-api-badge {
   font-size: 10px;

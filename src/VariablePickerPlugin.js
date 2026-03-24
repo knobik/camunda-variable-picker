@@ -3,6 +3,8 @@ import React, { PureComponent } from 'react';
 import VariableScannerModule from './VariableScannerModule';
 import DragDropManager from './DragDropManager';
 import ApiClient from './ApiClient';
+import { buildExpression, insertTextAtCursor } from './expressionUtils';
+import { buildSpinExpression } from './SpinExpressionBuilder';
 import { renderPanel, destroyPanel } from './PanelRenderer';
 
 export default class VariablePickerPlugin extends PureComponent {
@@ -31,6 +33,7 @@ export default class VariablePickerPlugin extends PureComponent {
     this._apiClient = null;
     this._activeField = null;
     this._focusCount = 0;
+    this._highlightedIndex = -1;
 
     this._onDocumentClick = (e) => {
       if (!this.state.panelOpen) return;
@@ -39,10 +42,57 @@ export default class VariablePickerPlugin extends PureComponent {
       if (panel && panel.contains(e.target)) return;
       if (propsContainer && propsContainer.contains(e.target)) return;
       this._focusCount = 0;
+      this._highlightedIndex = -1;
       this.setState({ panelOpen: false });
     };
 
+    this._onKeyDown = (e) => {
+      if (!this.state.panelOpen) return;
+
+      if (e.key === 'Escape') {
+        this._highlightedIndex = -1;
+        this.setState({ panelOpen: false });
+        return;
+      }
+
+      // Get all draggable items in the panel
+      const items = document.querySelectorAll('.variable-picker-panel .variable-picker-item, .variable-picker-panel .variable-picker-tree-node');
+      if (!items.length) return;
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this._highlightedIndex = Math.min(this._highlightedIndex + 1, items.length - 1);
+        this._updateHighlight(items);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this._highlightedIndex = Math.max(this._highlightedIndex - 1, 0);
+        this._updateHighlight(items);
+      } else if (e.key === 'Enter' && this._highlightedIndex >= 0) {
+        e.preventDefault();
+        const item = items[this._highlightedIndex];
+        if (item && this._activeField) {
+          // Read the variable data from the item and insert
+          const varData = item.dataset.variable;
+          const varName = item.dataset.varName;
+          if (varData) {
+            const variable = JSON.parse(varData);
+            const expr = buildExpression(variable, this._activeField);
+            insertTextAtCursor(this._activeField, expr);
+            this._activeField.focus();
+          } else if (varName) {
+            const path = JSON.parse(item.dataset.path || '[]');
+            const isLeaf = item.dataset.leaf === 'true';
+            const spinExpr = buildSpinExpression(varName, path, isLeaf);
+            const expr = buildExpression({ name: varName, spinExpression: spinExpr }, this._activeField);
+            insertTextAtCursor(this._activeField, expr);
+            this._activeField.focus();
+          }
+        }
+      }
+    };
+
     document.addEventListener('mousedown', this._onDocumentClick, true);
+    document.addEventListener('keydown', this._onKeyDown, true);
 
     const { subscribe } = props;
 
@@ -94,7 +144,19 @@ export default class VariablePickerPlugin extends PureComponent {
   componentWillUnmount() {
     this._dragDropManager.detach();
     document.removeEventListener('mousedown', this._onDocumentClick, true);
+    document.removeEventListener('keydown', this._onKeyDown, true);
     destroyPanel();
+  }
+
+  _updateHighlight(items) {
+    items.forEach((item, i) => {
+      item.classList.toggle('variable-picker-item-highlighted', i === this._highlightedIndex);
+    });
+
+    // Scroll highlighted item into view
+    if (this._highlightedIndex >= 0 && items[this._highlightedIndex]) {
+      items[this._highlightedIndex].scrollIntoView({ block: 'nearest' });
+    }
   }
 
   async _initApiClient(tab) {
@@ -251,6 +313,7 @@ export default class VariablePickerPlugin extends PureComponent {
     }
     top = Math.max(top, 40);
 
+    this._highlightedIndex = -1;
     this.setState({
       panelOpen: true,
       panelPosition: {

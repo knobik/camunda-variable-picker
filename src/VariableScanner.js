@@ -2,7 +2,9 @@ import {
   scanInputOutput,
   scanFormFields,
   scanResultVariable,
-  scanScriptVariables
+  scanScriptVariables,
+  scanMultiInstance,
+  scanExecutionListeners
 } from './scanner';
 
 /**
@@ -71,7 +73,9 @@ export default class VariableScanner {
         scanInputOutput,
         scanFormFields,
         scanResultVariable,
-        scanScriptVariables
+        scanScriptVariables,
+        scanMultiInstance,
+        scanExecutionListeners
       ];
 
       for (const scanner of scanners) {
