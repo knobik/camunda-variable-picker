@@ -34,6 +34,10 @@
           <camunda:outputParameter name="validationErrors">[]</camunda:outputParameter>
           <camunda:outputParameter name="totalAmount">222.43</camunda:outputParameter>
         </camunda:inputOutput>
+        <camunda:executionListener event="end">
+          <camunda:script scriptFormat="groovy">execution.setVariable("validatedAt", new Date().toString())
+execution.setVariable("validatorName", "AutoValidator")</camunda:script>
+        </camunda:executionListener>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_2</bpmn:incoming>
       <bpmn:outgoing>Flow_3</bpmn:outgoing>
@@ -62,13 +66,18 @@ execution.setVariable("shippingWeight", weight)
 execution.setVariable("estimatedDelivery", "2026-04-01")
 execution.setVariable("trackingNumber", "TRK-" + System.currentTimeMillis())</bpmn:script>
     </bpmn:scriptTask>
+    <bpmn:serviceTask id="NotifyWarehouses" name="Notify Warehouses" camunda:delegateExpression="${notifyWarehouseDelegate}">
+      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:outgoing>Flow_9</bpmn:outgoing>
+      <bpmn:multiInstanceLoopCharacteristics camunda:collection="warehouseList" camunda:elementVariable="currentWarehouse" />
+    </bpmn:serviceTask>
     <bpmn:userTask id="ReviewOrder" name="Review Order" camunda:assignee="manager">
       <bpmn:extensionElements>
         <camunda:inputOutput>
           <camunda:inputParameter name="reviewNotes">${customerName} -</camunda:inputParameter>
         </camunda:inputOutput>
       </bpmn:extensionElements>
-      <bpmn:incoming>Flow_7</bpmn:incoming>
+      <bpmn:incoming>Flow_9</bpmn:incoming>
       <bpmn:outgoing>Flow_8</bpmn:outgoing>
     </bpmn:userTask>
     <bpmn:endEvent id="EndEvent_1" name="Order Completed">
@@ -87,7 +96,8 @@ execution.setVariable("trackingNumber", "TRK-" + System.currentTimeMillis())</bp
       <bpmn:conditionExpression>${isValid == false}</bpmn:conditionExpression>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="Flow_6" sourceRef="ProcessPayment" targetRef="CalculateShipping" />
-    <bpmn:sequenceFlow id="Flow_7" sourceRef="CalculateShipping" targetRef="ReviewOrder" />
+    <bpmn:sequenceFlow id="Flow_7" sourceRef="CalculateShipping" targetRef="NotifyWarehouses" />
+    <bpmn:sequenceFlow id="Flow_9" sourceRef="NotifyWarehouses" targetRef="ReviewOrder" />
     <bpmn:sequenceFlow id="Flow_8" sourceRef="ReviewOrder" targetRef="EndEvent_1" />
   </bpmn:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
@@ -120,14 +130,18 @@ execution.setVariable("trackingNumber", "TRK-" + System.currentTimeMillis())</bp
         <dc:Bounds x="850" y="87" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="ReviewOrder_di" bpmnElement="ReviewOrder">
+      <bpmndi:BPMNShape id="NotifyWarehouses_di" bpmnElement="NotifyWarehouses">
         <dc:Bounds x="1010" y="87" width="100" height="80" />
         <bpmndi:BPMNLabel />
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="ReviewOrder_di" bpmnElement="ReviewOrder">
+        <dc:Bounds x="1170" y="87" width="100" height="80" />
+        <bpmndi:BPMNLabel />
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
-        <dc:Bounds x="1172" y="109" width="36" height="36" />
+        <dc:Bounds x="1332" y="109" width="36" height="36" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1160" y="152" width="60" height="27" />
+          <dc:Bounds x="1320" y="152" width="60" height="27" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="EndEvent_2_di" bpmnElement="EndEvent_2">
@@ -170,9 +184,13 @@ execution.setVariable("trackingNumber", "TRK-" + System.currentTimeMillis())</bp
         <di:waypoint x="950" y="127" />
         <di:waypoint x="1010" y="127" />
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+      <bpmndi:BPMNEdge id="Flow_9_di" bpmnElement="Flow_9">
         <di:waypoint x="1110" y="127" />
-        <di:waypoint x="1172" y="127" />
+        <di:waypoint x="1170" y="127" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_8_di" bpmnElement="Flow_8">
+        <di:waypoint x="1270" y="127" />
+        <di:waypoint x="1332" y="127" />
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>
