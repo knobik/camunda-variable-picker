@@ -26,9 +26,10 @@ jobs:
 
       - name: Create release archive
         run: |
-          rm -rf node_modules .git .github src
-          cd ..
-          zip -r variable-picker.zip variable-picker
+          mkdir -p /tmp/variable-picker
+          rsync -a --exclude node_modules --exclude .git --exclude .github --exclude src --exclude .idea . /tmp/variable-picker/
+          cd /tmp
+          zip -r ${{ github.workspace }}/variable-picker.zip variable-picker
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
