@@ -31,7 +31,7 @@ const TYPE_ICONS = {
   'json': '{}',
   'object': '{}',
   'array': '[]',
-  'null': '0'
+  'null': '\u2205'
 };
 
 let panelEl = null;
@@ -89,8 +89,9 @@ function VariablePanel({
       h('span', { class: 'variable-picker-count' }, filtered.length)
     ),
     h('div', { class: 'variable-picker-search' },
+      h('span', { class: 'variable-picker-search-icon' }, '\u2315'),
       h('input', {
-        type: 'text', placeholder: 'Search variables...', class: 'variable-picker-search-input',
+        type: 'text', placeholder: 'Search variables\u2026', class: 'variable-picker-search-input',
         value: searchQuery || '',
         onInput: (e) => onSearchChange(e.target.value),
         onMouseDown: (e) => e.stopPropagation()
@@ -98,6 +99,9 @@ function VariablePanel({
     ),
     h('div', { class: 'variable-picker-body' },
       filtered.length === 0 && h('div', { class: 'variable-picker-empty' },
+        h('span', { class: 'variable-picker-empty-icon' },
+          variables.length === 0 ? '\u2205' : '\u2315'
+        ),
         variables.length === 0 ? 'No variables found in this process.' : 'No variables match your search.'
       ),
       CATEGORY_ORDER.map(category => {
@@ -112,6 +116,7 @@ function VariablePanel({
       })
     ),
     h('div', { class: 'variable-picker-footer' },
+      h('span', { class: 'variable-picker-footer-label' }, 'API'),
       h('span', { class: statusDotClass }),
       endpointUrl
         ? h('span', { class: 'variable-picker-footer-url', title: endpointUrl },
@@ -121,7 +126,7 @@ function VariablePanel({
       processInstanceId && h('span', {
         class: 'variable-picker-footer-pid',
         title: 'Process Instance: ' + processInstanceId
-      }, processInstanceId.substring(0, 8) + '...'),
+      }, processInstanceId.substring(0, 8) + '\u2026'),
       apiError && h('span', { class: 'variable-picker-footer-error', title: apiError }, '!'),
       h('button', {
         class: 'variable-picker-footer-refresh',
@@ -141,12 +146,14 @@ function CategoryGroup({ category, variables, isCollapsed, collapsedPaths, onTog
       h('span', { class: 'variable-picker-category-label' }, CATEGORY_LABELS[category] || category),
       h('span', { class: 'variable-picker-category-count' }, variables.length)
     ),
-    !isCollapsed && variables.map(variable => {
-      if (variable.type === 'json' && variable.jsonStructure) {
-        return h(JsonVariable, { key: variable.name, variable, collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery });
-      }
-      return h(SimpleVariable, { key: variable.name, variable, onDragStart, onDragEnd });
-    })
+    !isCollapsed && h('div', { class: 'variable-picker-category-items' },
+      variables.map(variable => {
+        if (variable.type === 'json' && variable.jsonStructure) {
+          return h(JsonVariable, { key: variable.name, variable, collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery });
+        }
+        return h(SimpleVariable, { key: variable.name, variable, onDragStart, onDragEnd });
+      })
+    )
   );
 }
 
@@ -162,6 +169,7 @@ function SimpleVariable({ variable, onDragStart, onDragEnd }) {
       (variable.value !== undefined ? '\nValue: ' + String(variable.value) : '') +
       '\nFrom: ' + variable.source.elementName
   },
+    h('span', { class: 'variable-picker-toggle-spacer' }),
     h('span', { class: 'variable-picker-type-icon type-' + variable.type }, icon),
     h('div', { class: 'variable-picker-item-content' },
       h('div', { class: 'variable-picker-item-row' },
@@ -198,7 +206,7 @@ function matchesJsonStructure(node, query) {
 function formatValue(value) {
   if (value === undefined || value === null) return null;
   const str = String(value);
-  if (str.length > 50) return str.substring(0, 47) + '...';
+  if (str.length > 50) return str.substring(0, 47) + '\u2026';
   return str;
 }
 
@@ -213,7 +221,7 @@ function JsonVariable({ variable, collapsedPaths, onTogglePath, onDragStart, onD
       title: 'From: ' + variable.source.elementName + ' (' + variable.source.elementType + ')'
     },
       h('span', {
-        class: 'variable-picker-tree-toggle' + (isExpanded ? '' : ' collapsed'),
+        class: 'variable-picker-json-toggle' + (isExpanded ? '' : ' collapsed'),
         onClick: (e) => { e.stopPropagation(); onTogglePath(pathKey); }
       }, '\u25BE'),
       h('span', {
@@ -225,10 +233,15 @@ function JsonVariable({ variable, collapsedPaths, onTogglePath, onDragStart, onD
         h('span', { class: 'variable-picker-item-type' }, 'json')
       )
     ),
-    isExpanded && variable.jsonStructure && h(TreeChildren, {
-      varName: variable.name, node: variable.jsonStructure, parentPath: [],
-      collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery, depth: 1
-    })
+    isExpanded && variable.jsonStructure && h('div', {
+      class: 'variable-picker-tree-children',
+      style: { '--tree-guide-offset': '17px' }
+    },
+      h(TreeChildren, {
+        varName: variable.name, node: variable.jsonStructure, parentPath: [],
+        collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery, depth: 1
+      })
+    )
   );
 }
 
@@ -281,7 +294,6 @@ function TreeNode({ varName, label, node, path, collapsedPaths, onTogglePath, on
   const isLeaf = !hasChildren;
   const isExpanded = searchQuery ? true : !collapsedPaths[pathKey];
   const icon = TYPE_ICONS[node.type] || '?';
-  const paddingLeft = 12 + depth * 16;
   const spinExpr = buildSpinExpression(varName, path, isLeaf);
   const dragData = { name: varName, spinExpression: spinExpr, isLeaf };
 
@@ -292,7 +304,6 @@ function TreeNode({ varName, label, node, path, collapsedPaths, onTogglePath, on
       'data-path': JSON.stringify(path),
       'data-leaf': String(isLeaf),
       onDragStart: (e) => onDragStart(e, dragData), onDragEnd,
-      style: { paddingLeft: paddingLeft + 'px' },
       title: 'SPIN: ' + spinExpr
     },
       hasChildren
@@ -310,9 +321,11 @@ function TreeNode({ varName, label, node, path, collapsedPaths, onTogglePath, on
         isLeaf && node.value !== undefined && h('div', { class: 'variable-picker-item-value-row' }, formatValue(node.value))
       )
     ),
-    hasChildren && isExpanded && h(TreeChildren, {
-      varName, node, parentPath: path,
-      collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery, depth: depth + 1
-    })
+    hasChildren && isExpanded && h('div', { class: 'variable-picker-tree-children' },
+      h(TreeChildren, {
+        varName, node, parentPath: path,
+        collapsedPaths, onTogglePath, onDragStart, onDragEnd, searchQuery, depth: depth + 1
+      })
+    )
   );
 }

@@ -1,112 +1,211 @@
 /* ========================================
    Variable Picker Panel
-   Inspired by n8n's spacious, clean panels
+   Matches Camunda Modeler design language
    ======================================== */
 
+:root {
+  --vp-font-sans: 'IBM Plex Sans', system-ui, Arial, sans-serif;
+  --vp-font-mono: 'IBM Plex Mono', monospace;
+
+  --vp-text-dark: hsl(225, 10%, 15%);
+  --vp-text-secondary: hsl(225, 10%, 35%);
+  --vp-text-muted: hsl(225, 10%, 55%);
+  --vp-text-faint: hsl(225, 10%, 75%);
+
+  --vp-border: hsl(225, 10%, 75%);
+  --vp-border-light: hsl(225, 10%, 85%);
+
+  --vp-bg-white: hsl(0, 0%, 100%);
+  --vp-bg-hover: hsl(225, 10%, 95%);
+  --vp-bg-input: hsl(225, 10%, 97%);
+  --vp-bg-panel-footer: hsl(225, 10%, 95%);
+
+  --vp-accent: hsl(205, 100%, 50%);
+  --vp-accent-hover: hsl(205, 100%, 45%);
+  --vp-accent-focus: hsl(205, 100%, 40%);
+  --vp-accent-bg: hsl(205, 100%, 95%);
+
+  --vp-tree-line: hsl(225, 10%, 82%);
+  --vp-radius: 3px;
+}
+
 .variable-picker-panel {
-  background: #ffffff;
-  border: 1px solid #e2e6ea;
-  border-radius: 8px;
-  box-shadow: -2px 4px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.04);
+  background: var(--vp-bg-white);
+  border: 1px solid var(--vp-border);
+  border-radius: var(--vp-radius);
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .16), 0 2px 16px 0 rgba(0, 0, 0, .16);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--vp-font-sans);
   font-size: 13px;
+  line-height: 1.5;
+  color: var(--vp-text-dark);
 }
 
-/* Header */
+/* ========================================
+   Header
+   ======================================== */
+
 .variable-picker-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid #edf0f3;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--vp-border-light);
+  background: var(--vp-bg-hover);
 }
 
 .variable-picker-title {
   font-weight: 600;
-  font-size: 14px;
-  color: #1a1a2e;
+  font-size: 13px;
+  color: var(--vp-text-dark);
   letter-spacing: -0.01em;
 }
 
 .variable-picker-count {
   font-size: 11px;
-  font-weight: 500;
-  color: #6b7280;
-  background: #f1f3f5;
-  padding: 2px 8px;
+  font-weight: 600;
+  color: var(--vp-text-secondary);
+  background: var(--vp-bg-white);
+  border: 1px solid var(--vp-border-light);
+  padding: 0 7px;
   border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 18px;
 }
 
-/* Search */
+/* ========================================
+   Search
+   ======================================== */
+
 .variable-picker-search {
-  padding: 8px 12px 10px;
-  border-bottom: 1px solid #edf0f3;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--vp-border-light);
+  position: relative;
+}
+
+.variable-picker-search-icon {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--vp-text-faint);
+  font-size: 13px;
+  pointer-events: none;
+  line-height: 1;
 }
 
 .variable-picker-search-input {
   width: 100%;
-  padding: 8px 10px;
-  border: 1px solid #dde1e6;
-  border-radius: 6px;
-  font-size: 12px;
+  padding: 6px 8px 6px 28px;
+  border: 1px solid var(--vp-border);
+  border-radius: var(--vp-radius);
+  font-size: 13px;
+  font-family: var(--vp-font-sans);
   outline: none;
   box-sizing: border-box;
-  background: #f8f9fa;
-  transition: border-color 0.15s, background 0.15s;
+  background: var(--vp-bg-input);
+  color: var(--vp-text-dark);
+  transition: border-color 150ms, background 150ms, box-shadow 150ms;
+  line-height: 1.5;
+}
+
+.variable-picker-search-input::placeholder {
+  color: var(--vp-text-faint);
 }
 
 .variable-picker-search-input:focus {
-  border-color: #4f7df9;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(79, 125, 249, 0.1);
+  border-color: var(--vp-accent);
+  background: var(--vp-bg-white);
+  box-shadow: 0 0 0 1px var(--vp-accent);
 }
 
-/* Body */
+/* ========================================
+   Body
+   ======================================== */
+
 .variable-picker-body {
   flex: 1;
   overflow-y: auto;
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
-/* Empty state */
+.variable-picker-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.variable-picker-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.variable-picker-body::-webkit-scrollbar-thumb {
+  background: var(--vp-border-light);
+  border-radius: 3px;
+}
+
+.variable-picker-body::-webkit-scrollbar-thumb:hover {
+  background: var(--vp-border);
+}
+
+/* ========================================
+   Empty state
+   ======================================== */
+
 .variable-picker-empty {
-  padding: 24px 16px;
-  color: #9ca3af;
+  padding: 28px 16px;
+  color: var(--vp-text-muted);
   text-align: center;
   font-size: 12px;
+  line-height: 1.6;
 }
 
-/* Category */
+.variable-picker-empty-icon {
+  display: block;
+  font-size: 20px;
+  margin-bottom: 6px;
+  opacity: 0.5;
+}
+
+/* ========================================
+   Category
+   ======================================== */
+
 .variable-picker-category {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .variable-picker-category-header {
   display: flex;
   align-items: center;
-  padding: 8px 16px;
+  padding: 6px 14px;
   cursor: pointer;
   user-select: none;
-  color: #6b7280;
-  font-size: 10px;
-  font-weight: 700;
+  color: var(--vp-text-muted);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  transition: background 150ms, color 150ms;
+  border-left: 2px solid transparent;
 }
 
 .variable-picker-category-header:hover {
-  background: #f8f9fa;
+  background: var(--vp-bg-hover);
+  color: var(--vp-text-secondary);
+  border-left-color: var(--vp-accent);
 }
 
 .variable-picker-chevron {
-  display: inline-block;
-  margin-right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  margin-right: 4px;
   font-size: 10px;
-  transition: transform 0.15s;
-  color: #9ca3af;
+  transition: transform 150ms ease;
+  color: var(--vp-text-faint);
 }
 
 .variable-picker-chevron.collapsed {
@@ -119,43 +218,77 @@
 
 .variable-picker-category-count {
   font-size: 10px;
-  color: #b0b8c4;
+  color: var(--vp-text-faint);
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Variable item */
+/* Category items container (animate) */
+.variable-picker-category-items {
+  overflow: hidden;
+}
+
+/* ========================================
+   Variable item
+   ======================================== */
+
 .variable-picker-item {
   display: flex;
   align-items: center;
-  padding: 8px 16px 8px 20px;
+  padding: 6px 14px 6px 12px;
   cursor: grab;
   user-select: none;
-  transition: background 0.1s;
-  border-left: 3px solid transparent;
+  transition: background 150ms, border-color 150ms;
+  border-left: 2px solid transparent;
+  gap: 0;
 }
 
 .variable-picker-item:hover {
-  background: #f0f5ff;
-  border-left-color: #4f7df9;
+  background: var(--vp-accent-bg);
+  border-left-color: var(--vp-accent);
 }
 
 .variable-picker-item:active {
   cursor: grabbing;
 }
 
-/* Type icon */
+/* Drag grip indicator */
+.variable-picker-grip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  color: var(--vp-border-light);
+  font-size: 9px;
+  letter-spacing: 1px;
+  line-height: 1;
+  transition: color 150ms;
+}
+
+.variable-picker-item:hover .variable-picker-grip {
+  color: var(--vp-text-faint);
+}
+
+/* ========================================
+   Type icon badges
+   ======================================== */
+
 .variable-picker-type-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 22px;
   height: 22px;
-  border-radius: 4px;
+  border-radius: var(--vp-radius);
   font-size: 10px;
   font-weight: 700;
-  margin-right: 10px;
+  margin-right: 8px;
   flex-shrink: 0;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: var(--vp-font-mono);
+  line-height: 1;
 }
 
 .variable-picker-type-icon.type-string {
@@ -194,11 +327,14 @@
 }
 
 .variable-picker-type-icon.type-null {
-  background: #f1f5f9;
-  color: #94a3b8;
+  background: hsl(225, 10%, 93%);
+  color: var(--vp-text-faint);
 }
 
-/* Item content (two-line layout) */
+/* ========================================
+   Item content
+   ======================================== */
+
 .variable-picker-item-content {
   flex: 1;
   min-width: 0;
@@ -213,7 +349,7 @@
 .variable-picker-item-name {
   font-size: 13px;
   font-weight: 500;
-  color: #1a1a2e;
+  color: var(--vp-text-dark);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -221,59 +357,72 @@
 
 .variable-picker-item-type {
   font-size: 10px;
-  color: #94a3b8;
+  color: var(--vp-text-secondary);
   margin-left: auto;
   flex-shrink: 0;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
-  background: #f1f5f9;
+  font-family: var(--vp-font-mono);
+  background: var(--vp-bg-hover);
   padding: 1px 5px;
-  border-radius: 3px;
+  border-radius: var(--vp-radius);
+  line-height: 1.4;
 }
 
 .variable-picker-item-value-row {
   font-size: 11px;
-  color: #9ca3af;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  color: var(--vp-text-muted);
+  font-family: var(--vp-font-mono);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
-/* Keyboard highlight */
+/* ========================================
+   Keyboard highlight
+   ======================================== */
+
 .variable-picker-item-highlighted {
-  background: #f0f5ff !important;
-  border-left-color: #4f7df9 !important;
+  background: var(--vp-accent-bg) !important;
+  border-left-color: var(--vp-accent) !important;
 }
 
-/* API enriched badge */
+/* ========================================
+   API enriched badge
+   ======================================== */
+
 .variable-picker-api-badge {
   font-size: 10px;
-  color: #f59e0b;
+  color: hsl(47, 88%, 53%);
   flex-shrink: 0;
 }
 
-/* Drag ghost */
+/* ========================================
+   Drag ghost
+   ======================================== */
+
 .variable-picker-drag-ghost {
   position: absolute;
   top: -1000px;
   left: -1000px;
-  padding: 6px 10px;
-  background: #1a1a2e;
-  color: #fff;
-  border-radius: 6px;
+  padding: 5px 10px;
+  background: var(--vp-text-dark);
+  color: var(--vp-bg-white);
+  border-radius: var(--vp-radius);
   font-size: 12px;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-family: var(--vp-font-mono);
   white-space: nowrap;
   z-index: 10000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 
-/* Drop target styling */
+/* ========================================
+   Drop target
+   ======================================== */
+
 .variable-picker-drop-hover {
-  outline: 2px solid #4f7df9 !important;
+  outline: 2px solid var(--vp-accent) !important;
   outline-offset: -1px;
-  background-color: #f0f5ff !important;
+  background-color: var(--vp-accent-bg) !important;
 }
 
 /* ========================================
@@ -282,6 +431,36 @@
 
 .variable-picker-json-root {
   padding-right: 12px;
+}
+
+/* Spacer on simple items to align with JSON toggle */
+.variable-picker-toggle-spacer {
+  display: inline-block;
+  width: 10px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* Toggle replaces grip on JSON root — same width so name stays aligned */
+.variable-picker-json-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  font-size: 10px;
+  cursor: pointer;
+  color: var(--vp-text-faint);
+  transition: transform 150ms ease, color 150ms;
+}
+
+.variable-picker-json-toggle:hover {
+  color: var(--vp-accent);
+}
+
+.variable-picker-json-toggle.collapsed {
+  transform: rotate(-90deg);
 }
 
 .variable-picker-json-root .variable-picker-json-drag {
@@ -296,23 +475,51 @@
   cursor: grabbing;
 }
 
+/* Tree container — indent guide line */
+.variable-picker-tree-children {
+  position: relative;
+  margin-left: var(--tree-guide-offset, 30px);
+  border-left: 1px solid var(--vp-tree-line);
+}
+
 .variable-picker-tree-node {
   display: flex;
   align-items: center;
-  padding: 5px 12px 5px 12px;
+  padding: 4px 12px 4px 10px;
   cursor: grab;
   user-select: none;
-  transition: background 0.1s;
-  border-left: 3px solid transparent;
+  transition: background 150ms;
+  position: relative;
 }
 
 .variable-picker-tree-node:hover {
-  background: #f0f5ff;
-  border-left-color: #4f7df9;
+  background: var(--vp-accent-bg);
 }
 
 .variable-picker-tree-node:active {
   cursor: grabbing;
+}
+
+/* Horizontal connector tick from indent guide to node content */
+.variable-picker-tree-node::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 8px;
+  height: 0;
+  border-top: 1px solid var(--vp-tree-line);
+}
+
+/* Hide the vertical guide below the last node at each level */
+.variable-picker-tree-children > div:last-child > .variable-picker-tree-node::after {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  bottom: -1px;
+  width: 1px;
+  background: var(--vp-bg-white);
 }
 
 .variable-picker-tree-toggle {
@@ -324,12 +531,14 @@
   font-size: 10px;
   cursor: pointer;
   flex-shrink: 0;
-  color: #9ca3af;
-  transition: transform 0.15s, color 0.1s;
+  color: var(--vp-text-faint);
+  transition: transform 150ms ease, color 150ms;
+  position: relative;
+  z-index: 1;
 }
 
 .variable-picker-tree-toggle:hover {
-  color: #4f7df9;
+  color: var(--vp-accent);
 }
 
 .variable-picker-tree-toggle.collapsed {
@@ -345,7 +554,7 @@
 .variable-picker-tree-label {
   font-size: 12px;
   font-weight: 500;
-  color: #374151;
+  color: var(--vp-text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -378,12 +587,20 @@
 .variable-picker-footer {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  border-top: 1px solid #edf0f3;
-  background: #f8f9fa;
+  gap: 6px;
+  padding: 7px 12px;
+  border-top: 1px solid var(--vp-border-light);
+  background: var(--vp-bg-panel-footer);
   font-size: 11px;
   flex-shrink: 0;
+}
+
+.variable-picker-footer-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--vp-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .variable-picker-status-dot {
@@ -394,70 +611,73 @@
 }
 
 .variable-picker-status-dot.status-disconnected {
-  background: #d1d5db;
+  background: hsl(225, 10%, 75%);
 }
 
 .variable-picker-status-dot.status-loading {
-  background: #f59e0b;
-  animation: vp-pulse 1s infinite;
+  background: hsl(47, 88%, 53%);
+  animation: vp-pulse 1.2s ease-in-out infinite;
 }
 
 .variable-picker-status-dot.status-connected {
-  background: #22c55e;
+  background: hsl(150, 86%, 44%);
 }
 
 .variable-picker-status-dot.status-error {
-  background: #ef4444;
+  background: hsl(360, 100%, 45%);
 }
 
 @keyframes vp-pulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.3; }
+  50% { opacity: 0.25; }
 }
 
 .variable-picker-footer-url {
   flex: 1;
-  color: #6b7280;
+  color: var(--vp-text-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 10px;
+  font-family: var(--vp-font-mono);
 }
 
 .variable-picker-footer-no-endpoint {
-  color: #b0b8c4;
+  color: var(--vp-text-faint);
   font-style: italic;
+  font-family: var(--vp-font-sans);
 }
 
 .variable-picker-footer-pid {
-  color: #9ca3af;
-  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  color: var(--vp-text-faint);
+  font-family: var(--vp-font-mono);
   font-size: 10px;
 }
 
 .variable-picker-footer-error {
-  color: #ef4444;
+  color: hsl(360, 100%, 45%);
   font-weight: 700;
   cursor: help;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .variable-picker-footer-refresh {
-  background: #fff;
-  border: 1px solid #dde1e6;
-  border-radius: 4px;
+  background: var(--vp-bg-white);
+  border: 1px solid var(--vp-border);
+  border-radius: var(--vp-radius);
   cursor: pointer;
   font-size: 13px;
-  padding: 2px 6px;
-  color: #6b7280;
+  padding: 1px 6px;
+  color: var(--vp-text-muted);
   flex-shrink: 0;
-  transition: background 0.1s, border-color 0.1s;
+  transition: background 150ms, border-color 150ms, color 150ms;
+  line-height: 1.3;
 }
 
 .variable-picker-footer-refresh:hover {
-  background: #eef2ff;
-  border-color: #4f7df9;
-  color: #4f7df9;
+  background: var(--vp-accent-bg);
+  border-color: var(--vp-accent);
+  color: var(--vp-accent);
 }
 
 .variable-picker-footer-refresh:disabled {
