@@ -20,7 +20,7 @@ Browse process variables in a floating panel and drag them into expression field
 
 1. Clone or download this repository into your Camunda Modeler plugins directory:
    ```
-   ~/.config/camunda-modeler/plugins/variable-picker
+   camunda-modeler/resources/plugins/variable-picker
    ```
 
 2. Install dependencies and build:
