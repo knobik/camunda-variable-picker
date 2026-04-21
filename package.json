@@ -10,7 +10,7 @@
   "devDependencies": {
     "camunda-modeler-plugin-helpers": "^6.0.0",
     "camunda-modeler-webpack-plugin": "^0.2.0",
-    "webpack": "^5.74.0",
+    "webpack": "^5.106.2",
     "webpack-cli": "^7.0.0"
   }
 }
